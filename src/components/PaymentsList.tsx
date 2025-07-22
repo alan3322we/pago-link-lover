@@ -24,7 +24,7 @@ interface Payment {
   };
 }
 
-function PaymentsList() {
+export function PaymentsList() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -257,5 +257,3 @@ function PaymentsList() {
     </Card>
   );
 }
-
-export default PaymentsList;

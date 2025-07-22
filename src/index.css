@@ -114,40 +114,4 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
-
-  /* Performance optimizations */
-  img {
-    @apply transition-transform duration-200;
-  }
-  
-  /* Smooth scrolling for better mobile experience */
-  html {
-    scroll-behavior: smooth;
-  }
-  
-  /* Reduce motion for accessibility */
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
-}
-
-/* Mobile optimizations */
-@layer utilities {
-  .mobile-scroll-touch {
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  .mobile-tap-highlight {
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  /* Better mobile touch targets */
-  .touch-target {
-    min-height: 44px;
-    min-width: 44px;
-  }
 }

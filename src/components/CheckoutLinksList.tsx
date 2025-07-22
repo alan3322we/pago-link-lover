@@ -34,7 +34,7 @@ interface CheckoutLinksListProps {
   onRefreshComplete: () => void;
 }
 
-function CheckoutLinksList({ refresh, onRefreshComplete }: CheckoutLinksListProps) {
+export function CheckoutLinksList({ refresh, onRefreshComplete }: CheckoutLinksListProps) {
   const [links, setLinks] = useState<CheckoutLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
@@ -283,5 +283,3 @@ function CheckoutLinksList({ refresh, onRefreshComplete }: CheckoutLinksListProp
     </Card>
   );
 }
-
-export default CheckoutLinksList;
