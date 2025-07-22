@@ -101,7 +101,7 @@ export const TransparentCheckout = () => {
         .from('checkout_customization')
         .select('*')
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (data) {
         setCustomization(data);
@@ -493,3 +493,5 @@ export const TransparentCheckout = () => {
     </div>
   );
 };
+
+export default TransparentCheckout;

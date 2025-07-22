@@ -98,7 +98,7 @@ const handler = async (req: Request): Promise<Response> => {
         image_url,
         reference_id,
         mercadopago_preference_id: mpData.id,
-        checkout_url: mpData.init_point,
+        checkout_url: `${req.headers.get('origin')}/checkout/`, // Will be completed with ID after insert
         is_active: true
       })
       .select()
@@ -112,8 +112,22 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Update with complete checkout URL
+    const completeCheckoutUrl = `${req.headers.get('origin')}/checkout/${checkoutLink.id}`;
+    const { error: updateError } = await supabase
+      .from('checkout_links')
+      .update({ checkout_url: completeCheckoutUrl })
+      .eq('id', checkoutLink.id);
+
+    if (updateError) {
+      console.error('Update error:', updateError);
+    }
+
+    // Return the complete data
+    const finalData = { ...checkoutLink, checkout_url: completeCheckoutUrl };
+
     return new Response(
-      JSON.stringify(checkoutLink),
+      JSON.stringify(finalData),
       { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
 

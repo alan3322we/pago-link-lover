@@ -8,7 +8,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailure from "./pages/PaymentFailure";
 import PaymentPending from "./pages/PaymentPending";
 import NotFound from "./pages/NotFound";
-import { TransparentCheckout } from "./components/TransparentCheckout";
+import TransparentCheckout from "./components/TransparentCheckout";
 
 const queryClient = new QueryClient();
 
