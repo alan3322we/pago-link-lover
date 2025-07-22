@@ -13,7 +13,7 @@ interface ConfigFormProps {
   onConfigSaved: () => void;
 }
 
-export function ConfigForm({ onConfigSaved }: ConfigFormProps) {
+function ConfigForm({ onConfigSaved }: ConfigFormProps) {
   const [accessToken, setAccessToken] = useState('');
   const [publicKey, setPublicKey] = useState('');
   const [isSandbox, setIsSandbox] = useState(true);
@@ -131,3 +131,5 @@ export function ConfigForm({ onConfigSaved }: ConfigFormProps) {
     </Card>
   );
 }
+
+export default ConfigForm;

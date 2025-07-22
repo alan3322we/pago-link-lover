@@ -12,7 +12,7 @@ interface CheckoutLinkFormProps {
   onLinkCreated: () => void;
 }
 
-export function CheckoutLinkForm({ onLinkCreated }: CheckoutLinkFormProps) {
+function CheckoutLinkForm({ onLinkCreated }: CheckoutLinkFormProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
@@ -247,3 +247,5 @@ export function CheckoutLinkForm({ onLinkCreated }: CheckoutLinkFormProps) {
     </Card>
   );
 }
+
+export default CheckoutLinkForm;
