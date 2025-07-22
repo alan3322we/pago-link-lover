@@ -1,1 +1,10 @@
 project_id = "yutddrrtogmpakzfzaqz"
+
+[functions.create-checkout-link]
+verify_jwt = false
+
+[functions.mercadopago-webhook]
+verify_jwt = false
+
+[functions.save-config]
+verify_jwt = false

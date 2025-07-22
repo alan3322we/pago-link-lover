@@ -14,7 +14,184 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      checkout_links: {
+        Row: {
+          amount: number
+          checkout_url: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          is_active: boolean
+          mercadopago_preference_id: string | null
+          reference_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          checkout_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          mercadopago_preference_id?: string | null
+          reference_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          checkout_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          mercadopago_preference_id?: string | null
+          reference_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mercadopago_config: {
+        Row: {
+          access_token: string
+          created_at: string
+          id: string
+          is_sandbox: boolean
+          public_key: string | null
+          updated_at: string
+          webhook_secret: string | null
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          id?: string
+          is_sandbox?: boolean
+          public_key?: string | null
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          id?: string
+          is_sandbox?: boolean
+          public_key?: string | null
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          payment_id: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          payment_id?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          payment_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          checkout_link_id: string | null
+          created_at: string
+          currency: string
+          fee_amount: number | null
+          id: string
+          mercadopago_payment_id: string
+          net_received_amount: number | null
+          payer_document_number: string | null
+          payer_document_type: string | null
+          payer_email: string | null
+          payer_name: string | null
+          payer_phone: string | null
+          payment_method: string | null
+          status: string
+          transaction_amount: number | null
+          updated_at: string
+          webhook_data: Json | null
+        }
+        Insert: {
+          amount: number
+          checkout_link_id?: string | null
+          created_at?: string
+          currency: string
+          fee_amount?: number | null
+          id?: string
+          mercadopago_payment_id: string
+          net_received_amount?: number | null
+          payer_document_number?: string | null
+          payer_document_type?: string | null
+          payer_email?: string | null
+          payer_name?: string | null
+          payer_phone?: string | null
+          payment_method?: string | null
+          status: string
+          transaction_amount?: number | null
+          updated_at?: string
+          webhook_data?: Json | null
+        }
+        Update: {
+          amount?: number
+          checkout_link_id?: string | null
+          created_at?: string
+          currency?: string
+          fee_amount?: number | null
+          id?: string
+          mercadopago_payment_id?: string
+          net_received_amount?: number | null
+          payer_document_number?: string | null
+          payer_document_type?: string | null
+          payer_email?: string | null
+          payer_name?: string | null
+          payer_phone?: string | null
+          payment_method?: string | null
+          status?: string
+          transaction_amount?: number | null
+          updated_at?: string
+          webhook_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_checkout_link_id_fkey"
+            columns: ["checkout_link_id"]
+            isOneToOne: false
+            referencedRelation: "checkout_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
