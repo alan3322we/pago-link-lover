@@ -433,6 +433,35 @@ export const TransparentCheckout = () => {
                     </div>
                   )}
 
+                  {/* Security & Trust Section */}
+                  <div className="p-4 rounded-xl" style={{ backgroundColor: `${customization.primary_color}05` }}>
+                    <div className="text-center mb-4">
+                      <Shield className="h-8 w-8 mx-auto mb-2" style={{ color: customization.primary_color }} />
+                      <h3 className="font-bold text-lg mb-2">Pagamento 100% Seguro</h3>
+                      <p className="text-sm opacity-75">Seus dados estão protegidos com criptografia SSL</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="text-center">
+                        <Lock className="h-6 w-6 mx-auto mb-1" style={{ color: customization.primary_color }} />
+                        <p className="text-xs font-medium">SSL 256-bit</p>
+                      </div>
+                      <div className="text-center">
+                        <CheckCircle className="h-6 w-6 mx-auto mb-1" style={{ color: customization.primary_color }} />
+                        <p className="text-xs font-medium">Compra Segura</p>
+                      </div>
+                    </div>
+                    
+                    <div className="text-center p-3 rounded-lg" style={{ backgroundColor: `${customization.secondary_color}10` }}>
+                      <p className="text-sm font-bold" style={{ color: customization.secondary_color }}>
+                        🛡️ GARANTIA DE 7 DIAS
+                      </p>
+                      <p className="text-xs opacity-75 mt-1">
+                        Reembolso total se não ficar satisfeito
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Enhanced Total */}
                   <div className="border-t pt-6">
                     <div className="space-y-2">
