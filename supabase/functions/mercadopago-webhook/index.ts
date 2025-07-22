@@ -91,16 +91,59 @@ const handler = async (req: Request): Promise<Response> => {
         webhook_data: paymentData
       };
 
+      // Criar ou atualizar notificação baseada no status
+      let notificationMessage = '';
+      let notificationType = 'payment_status_update';
+
+      switch (paymentData.status) {
+        case 'approved':
+          notificationMessage = `✅ Pagamento aprovado! ${paymentRecord.payer_name || 'Cliente'} pagou R$ ${paymentData.transaction_amount} via ${paymentData.payment_method_id}`;
+          notificationType = 'payment_approved';
+          break;
+        case 'pending':
+          notificationMessage = `⏳ Pagamento pendente - R$ ${paymentData.transaction_amount} via ${paymentData.payment_method_id}`;
+          notificationType = 'payment_pending';
+          break;
+        case 'rejected':
+          notificationMessage = `❌ Pagamento rejeitado - R$ ${paymentData.transaction_amount} via ${paymentData.payment_method_id}`;
+          notificationType = 'payment_rejected';
+          break;
+        case 'cancelled':
+          notificationMessage = `🚫 Pagamento cancelado - R$ ${paymentData.transaction_amount} via ${paymentData.payment_method_id}`;
+          notificationType = 'payment_cancelled';
+          break;
+        case 'refunded':
+          notificationMessage = `💸 Pagamento reembolsado - R$ ${paymentData.transaction_amount} via ${paymentData.payment_method_id}`;
+          notificationType = 'payment_refunded';
+          break;
+        default:
+          notificationMessage = `Status do pagamento atualizado: ${paymentData.status} - R$ ${paymentData.transaction_amount}`;
+      }
+
       if (existingPayment) {
         // Atualizar pagamento existente
         const { error: updateError } = await supabase
           .from('payments')
-          .update(paymentRecord)
+          .update({
+            ...paymentRecord,
+            updated_at: new Date().toISOString()
+          })
           .eq('id', existingPayment.id);
 
         if (updateError) {
           console.error('Error updating payment:', updateError);
           return new Response('Error updating payment', { status: 500 });
+        }
+
+        // Criar notificação apenas se houve mudança de status
+        if (existingPayment.status !== paymentData.status) {
+          await supabase
+            .from('notifications')
+            .insert({
+              payment_id: existingPayment.id,
+              type: notificationType,
+              message: notificationMessage
+            });
         }
       } else {
         // Criar novo pagamento
@@ -115,16 +158,14 @@ const handler = async (req: Request): Promise<Response> => {
           return new Response('Error inserting payment', { status: 500 });
         }
 
-        // Criar notificação se o pagamento foi aprovado
-        if (paymentData.status === 'approved') {
-          await supabase
-            .from('notifications')
-            .insert({
-              payment_id: newPayment.id,
-              type: 'payment_approved',
-              message: `Pagamento aprovado! ${paymentRecord.payer_name} pagou R$ ${paymentData.transaction_amount} via ${paymentData.payment_method_id}`
-            });
-        }
+        // Criar notificação para novo pagamento
+        await supabase
+          .from('notifications')
+          .insert({
+            payment_id: newPayment.id,
+            type: notificationType,
+            message: notificationMessage
+          });
       }
     }
 

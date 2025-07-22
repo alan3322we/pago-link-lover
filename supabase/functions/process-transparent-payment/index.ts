@@ -121,8 +121,11 @@ const handler = async (req: Request): Promise<Response> => {
       paymentData.payment_method_id = 'debvisa'; // Será determinado pelo token
     } else if (payment_method === 'pix') {
       paymentData.payment_method_id = 'pix';
+      // Configurações específicas para PIX
+      paymentData.date_of_expiration = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 minutos
     } else if (payment_method === 'boleto') {
       paymentData.payment_method_id = 'bolbradesco';
+      paymentData.date_of_expiration = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(); // 3 dias
     }
 
     // Criar pagamento no Mercado Pago
@@ -189,17 +192,35 @@ const handler = async (req: Request): Promise<Response> => {
         payment_id: payment?.id
       });
 
+    // Estruturar resposta baseada no método de pagamento
+    let responseData: any = {
+      payment_id: mpData.id,
+      status: mpData.status,
+      payment_method: mpData.payment_method_id,
+      transaction_amount: mpData.transaction_amount,
+    };
+
+    // Adicionar dados específicos do PIX
+    if (payment_method === 'pix' && mpData.point_of_interaction) {
+      responseData.pix_qr_code = mpData.point_of_interaction.transaction_data?.qr_code;
+      responseData.pix_qr_code_base64 = mpData.point_of_interaction.transaction_data?.qr_code_base64;
+      responseData.pix_key = mpData.point_of_interaction.transaction_data?.qr_code; // Chave PIX é o mesmo que QR code
+      responseData.expiration_date = mpData.date_of_expiration;
+    }
+    
+    // Adicionar dados específicos do Boleto
+    if (payment_method === 'boleto') {
+      responseData.boleto_url = mpData.transaction_details?.external_resource_url;
+      responseData.barcode = mpData.barcode?.content;
+    }
+
+    // Para sandbox, adicionar URL de aprovação
+    if (config.is_sandbox) {
+      responseData.sandbox_url = mpData.sandbox_url;
+    }
+
     return new Response(
-      JSON.stringify({
-        payment_id: mpData.id,
-        status: mpData.status,
-        payment_method: mpData.payment_method_id,
-        transaction_amount: mpData.transaction_amount,
-        pix_qr_code: mpData.point_of_interaction?.transaction_data?.qr_code,
-        pix_qr_code_base64: mpData.point_of_interaction?.transaction_data?.qr_code_base64,
-        boleto_url: mpData.transaction_details?.external_resource_url,
-        approval_url: mpData.sandbox_url
-      }),
+      JSON.stringify(responseData),
       { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
 

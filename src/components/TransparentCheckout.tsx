@@ -178,8 +178,21 @@ export const TransparentCheckout = () => {
       }
 
       // Redirecionar baseado no método de pagamento e status
-      if (paymentMethod === 'pix' && data.pix_qr_code) {
-        navigate(`/payment-pending?pix_code=${encodeURIComponent(data.pix_qr_code)}`);
+      if (paymentMethod === 'pix') {
+        // Para PIX, sempre redirecionar para página de PIX com os dados
+        const pixData = {
+          qr_code: data.pix_qr_code,
+          qr_code_base64: data.pix_qr_code_base64,
+          pix_key: data.pix_key,
+          amount: data.transaction_amount,
+          expiration_date: data.expiration_date,
+          payment_id: data.payment_id
+        };
+        const pixParams = new URLSearchParams();
+        Object.entries(pixData).forEach(([key, value]) => {
+          if (value) pixParams.append(key, value.toString());
+        });
+        navigate(`/payment-pending?${pixParams.toString()}`);
       } else if (paymentMethod === 'boleto' && data.boleto_url) {
         window.open(data.boleto_url, '_blank');
         navigate('/payment-pending');
