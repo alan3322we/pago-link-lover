@@ -26,6 +26,7 @@ interface CustomizationData {
   background_color: string;
   text_color: string;
   logo_url?: string;
+  background_image_url?: string;
   company_name: string;
   checkout_title: string;
   checkout_description?: string;
@@ -236,310 +237,447 @@ export const TransparentCheckout = () => {
 
   return (
     <div 
-      className="min-h-screen py-8 px-4"
+      className="min-h-screen"
       style={{ 
-        backgroundColor: customization.background_color,
+        background: `linear-gradient(135deg, ${customization.background_color} 0%, ${customization.secondary_color}15 100%)`,
         color: customization.text_color 
       }}
     >
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          {customization.logo_url && (
-            <img 
-              src={customization.logo_url} 
-              alt={customization.company_name}
-              className="h-16 mx-auto mb-4"
-            />
-          )}
-          <h1 className="text-3xl font-bold mb-2">{customization.checkout_title}</h1>
-          {customization.checkout_description && (
-            <p className="text-lg opacity-80">{customization.checkout_description}</p>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Resumo do Produto */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Resumo do Pedido</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-4">
-                {checkoutData.image_url && (
-                  <img 
-                    src={checkoutData.image_url} 
-                    alt={checkoutData.title}
-                    className="w-20 h-20 object-cover rounded-lg"
-                  />
-                )}
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">{checkoutData.title}</h3>
-                  {checkoutData.description && (
-                    <p className="text-sm opacity-75">{checkoutData.description}</p>
-                  )}
-                  <p className="text-xl font-bold mt-2">
-                    {checkoutData.currency} {checkoutData.amount.toFixed(2)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Order Bump */}
-              {customization.enable_order_bump && customization.order_bump_title && (
-                <div className="border rounded-lg p-4 bg-gradient-to-r from-primary/10 to-secondary/10">
-                  <div className="flex items-start gap-3">
-                      <Checkbox
-                        id="order-bump"
-                        checked={orderBumpSelected}
-                        onCheckedChange={(checked) => setOrderBumpSelected(checked === true)}
-                      />
-                    <div className="flex-1">
-                      <label htmlFor="order-bump" className="cursor-pointer">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle className="h-5 w-5 text-primary" />
-                          <span className="font-semibold">{customization.order_bump_title}</span>
-                          <span className="text-primary font-bold">
-                            +{checkoutData.currency} {(customization.order_bump_price || 0).toFixed(2)}
-                          </span>
-                        </div>
-                        {customization.order_bump_description && (
-                          <p className="text-sm opacity-75">{customization.order_bump_description}</p>
-                        )}
-                      </label>
-                    </div>
-                    {customization.order_bump_image_url && (
-                      <img 
-                        src={customization.order_bump_image_url}
-                        alt="Order bump"
-                        className="w-12 h-12 object-cover rounded"
-                      />
-                    )}
-                  </div>
+      {/* Background Image Overlay */}
+      {customization.background_image_url && (
+        <div 
+          className="fixed inset-0 bg-cover bg-center opacity-10 z-0"
+          style={{ backgroundImage: `url(${customization.background_image_url})` }}
+        />
+      )}
+      
+      <div className="relative z-10 py-8 px-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Enhanced Header */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center p-2 rounded-full mb-6" 
+                 style={{ backgroundColor: `${customization.primary_color}20` }}>
+              {customization.logo_url ? (
+                <img 
+                  src={customization.logo_url} 
+                  alt={customization.company_name}
+                  className="h-20 w-auto"
+                />
+              ) : (
+                <div className="h-16 w-16 rounded-full flex items-center justify-center text-2xl font-bold"
+                     style={{ backgroundColor: customization.primary_color, color: customization.background_color }}>
+                  {customization.company_name.charAt(0)}
                 </div>
               )}
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              {customization.checkout_title}
+            </h1>
+            {customization.checkout_description && (
+              <p className="text-xl opacity-80 max-w-2xl mx-auto">{customization.checkout_description}</p>
+            )}
+          </div>
 
-              {/* Total */}
-              <div className="border-t pt-4">
-                <div className="flex justify-between text-2xl font-bold">
-                  <span>Total:</span>
-                  <span style={{ color: customization.primary_color }}>
-                    {checkoutData.currency} {totalAmount.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Formulário de Pagamento */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Dados do Pagamento</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Dados Pessoais */}
-              <div className="space-y-4">
-                <h4 className="font-semibold">Dados Pessoais</h4>
-                <div className="grid grid-cols-1 gap-4">
-                  <div>
-                    <Label htmlFor="name">Nome Completo</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="email">E-mail</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone">Telefone</Label>
-                      <Input
-                        id="phone"
-                        value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="document-type">Documento</Label>
-                      <Select
-                        value={formData.document_type}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, document_type: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="CPF">CPF</SelectItem>
-                          <SelectItem value="CNPJ">CNPJ</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="document-number">Número</Label>
-                      <Input
-                        id="document-number"
-                        value={formData.document_number}
-                        onChange={(e) => setFormData(prev => ({ ...prev, document_number: e.target.value }))}
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Método de Pagamento */}
-              <div className="space-y-4">
-                <h4 className="font-semibold">Método de Pagamento</h4>
-                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                  {customization.enable_credit_card && (
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="credit_card" id="credit_card" />
-                      <Label htmlFor="credit_card" className="flex items-center gap-2">
-                        <CreditCard className="h-4 w-4" />
-                        Cartão de Crédito
-                      </Label>
-                    </div>
-                  )}
-                  {customization.enable_debit_card && (
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="debit_card" id="debit_card" />
-                      <Label htmlFor="debit_card" className="flex items-center gap-2">
-                        <CreditCard className="h-4 w-4" />
-                        Cartão de Débito
-                      </Label>
-                    </div>
-                  )}
-                  {customization.enable_pix && (
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="pix" id="pix" />
-                      <Label htmlFor="pix" className="flex items-center gap-2">
-                        <QrCode className="h-4 w-4" />
-                        PIX
-                      </Label>
-                    </div>
-                  )}
-                  {customization.enable_boleto && (
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="boleto" id="boleto" />
-                      <Label htmlFor="boleto" className="flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        Boleto
-                      </Label>
-                    </div>
-                  )}
-                </RadioGroup>
-              </div>
-
-              {/* Dados do Cartão */}
-              {(paymentMethod === 'credit_card' || paymentMethod === 'debit_card') && (
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Dados do Cartão</h4>
-                  <div>
-                    <Label htmlFor="card-number">Número do Cartão</Label>
-                    <Input
-                      id="card-number"
-                      value={formData.card_number}
-                      onChange={(e) => setFormData(prev => ({ ...prev, card_number: e.target.value }))}
-                      placeholder="1234 5678 9012 3456"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="card-holder">Nome no Cartão</Label>
-                    <Input
-                      id="card-holder"
-                      value={formData.card_holder_name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, card_holder_name: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="card-expiry">Validade</Label>
-                      <Input
-                        id="card-expiry"
-                        value={formData.card_expiry}
-                        onChange={(e) => setFormData(prev => ({ ...prev, card_expiry: e.target.value }))}
-                        placeholder="MM/AA"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="card-cvv">CVV</Label>
-                      <Input
-                        id="card-cvv"
-                        value={formData.card_cvv}
-                        onChange={(e) => setFormData(prev => ({ ...prev, card_cvv: e.target.value }))}
-                        placeholder="123"
-                        required
-                      />
-                    </div>
-                    {paymentMethod === 'credit_card' && (
-                      <div>
-                        <Label htmlFor="installments">Parcelas</Label>
-                        <Select
-                          value={formData.installments.toString()}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, installments: parseInt(value) }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {[1,2,3,4,5,6,7,8,9,10,11,12].map(i => (
-                              <SelectItem key={i} value={i.toString()}>
-                                {i}x de {(totalAmount / i).toFixed(2)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            {/* Product Summary - Enhanced */}
+            <div className="xl:col-span-1">
+              <Card className="sticky top-8 shadow-2xl border-0" style={{ backgroundColor: `${customization.background_color}f5` }}>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-2xl flex items-center gap-3">
+                    <div className="w-3 h-8 rounded-full" style={{ backgroundColor: customization.primary_color }}></div>
+                    Resumo do Pedido
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Product Display */}
+                  <div className="relative">
+                    {checkoutData.image_url && (
+                      <div className="relative mb-4">
+                        <img 
+                          src={checkoutData.image_url} 
+                          alt={checkoutData.title}
+                          className="w-full h-48 object-cover rounded-lg shadow-lg"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-lg"></div>
                       </div>
                     )}
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold mb-2">{checkoutData.title}</h3>
+                      {checkoutData.description && (
+                        <p className="text-sm opacity-75 mb-4">{checkoutData.description}</p>
+                      )}
+                      <div className="inline-flex items-center px-4 py-2 rounded-full"
+                           style={{ backgroundColor: `${customization.primary_color}20` }}>
+                        <span className="text-2xl font-bold" style={{ color: customization.primary_color }}>
+                          {checkoutData.currency} {checkoutData.amount.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
 
-              {/* Botão de Pagamento */}
-              <Button 
-                onClick={handlePayment} 
-                disabled={loading}
-                className="w-full h-12 text-lg font-semibold"
-                style={{ backgroundColor: customization.primary_color }}
-              >
-                {loading ? (
-                  'Processando...'
-                ) : (
-                  <>
-                    <Lock className="h-5 w-5 mr-2" />
-                    Finalizar Pagamento - {checkoutData.currency} {totalAmount.toFixed(2)}
-                  </>
-                )}
-              </Button>
+                  {/* Enhanced Order Bump */}
+                  {customization.enable_order_bump && customization.order_bump_title && (
+                    <div className="relative">
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-4 py-1 rounded-full text-xs font-bold shadow-lg">
+                          🔥 OFERTA ESPECIAL
+                        </div>
+                      </div>
+                      <div 
+                        className="border-2 rounded-xl p-6 mt-4 transition-all duration-300 hover:shadow-xl cursor-pointer"
+                        style={{ 
+                          borderColor: orderBumpSelected ? customization.primary_color : `${customization.primary_color}40`,
+                          background: orderBumpSelected 
+                            ? `linear-gradient(135deg, ${customization.primary_color}10, ${customization.secondary_color}10)`
+                            : `${customization.background_color}80`
+                        }}
+                        onClick={() => setOrderBumpSelected(!orderBumpSelected)}
+                      >
+                        <div className="flex items-start gap-4">
+                          <Checkbox
+                            id="order-bump"
+                            checked={orderBumpSelected}
+                            onCheckedChange={(checked) => setOrderBumpSelected(checked === true)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="font-bold text-lg">{customization.order_bump_title}</h4>
+                              <div className="text-right">
+                                <div className="text-xs opacity-60 line-through">
+                                  {checkoutData.currency} {((customization.order_bump_price || 0) * 1.5).toFixed(2)}
+                                </div>
+                                <div className="font-bold text-lg" style={{ color: customization.primary_color }}>
+                                  +{checkoutData.currency} {(customization.order_bump_price || 0).toFixed(2)}
+                                </div>
+                              </div>
+                            </div>
+                            {customization.order_bump_description && (
+                              <p className="text-sm opacity-75 mb-3">{customization.order_bump_description}</p>
+                            )}
+                            <div className="flex items-center gap-2 text-xs opacity-60">
+                              <CheckCircle className="h-4 w-4" />
+                              <span>Aproveite esta oferta única!</span>
+                            </div>
+                          </div>
+                          {customization.order_bump_image_url && (
+                            <img 
+                              src={customization.order_bump_image_url}
+                              alt="Order bump"
+                              className="w-16 h-16 object-cover rounded-lg shadow-md"
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-              {/* Selos de Segurança */}
-              <div className="flex items-center justify-center gap-4 pt-4 border-t">
-                <div className="flex items-center gap-2 text-sm opacity-75">
-                  <Shield className="h-4 w-4" />
-                  Pagamento 100% Seguro
-                </div>
-                <div className="flex items-center gap-2 text-sm opacity-75">
-                  <Lock className="h-4 w-4" />
-                  SSL Protegido
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                  {/* Enhanced Total */}
+                  <div className="border-t pt-6">
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Produto:</span>
+                        <span>{checkoutData.currency} {checkoutData.amount.toFixed(2)}</span>
+                      </div>
+                      {orderBumpSelected && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Oferta Especial:</span>
+                          <span>+{checkoutData.currency} {(customization.order_bump_price || 0).toFixed(2)}</span>
+                        </div>
+                      )}
+                      <div className="border-t pt-2">
+                        <div className="flex justify-between text-2xl font-bold">
+                          <span>Total:</span>
+                          <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                            {checkoutData.currency} {totalAmount.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Payment Form - Enhanced */}
+            <div className="xl:col-span-2">
+              <Card className="shadow-2xl border-0" style={{ backgroundColor: `${customization.background_color}f5` }}>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-2xl flex items-center gap-3">
+                    <div className="w-3 h-8 rounded-full" style={{ backgroundColor: customization.secondary_color }}></div>
+                    Dados do Pagamento
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Dados Pessoais */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg flex items-center gap-2">
+                      <div className="w-2 h-6 rounded-full" style={{ backgroundColor: customization.primary_color }}></div>
+                      Dados Pessoais
+                    </h4>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <Label htmlFor="name">Nome Completo</Label>
+                        <Input
+                          id="name"
+                          value={formData.name}
+                          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                          className="h-12"
+                          required
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="email">E-mail</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                            className="h-12"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="phone">Telefone</Label>
+                          <Input
+                            id="phone"
+                            value={formData.phone}
+                            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                            className="h-12"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="document-type">Documento</Label>
+                          <Select
+                            value={formData.document_type}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, document_type: value }))}
+                          >
+                            <SelectTrigger className="h-12">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="CPF">CPF</SelectItem>
+                              <SelectItem value="CNPJ">CNPJ</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="document-number">Número</Label>
+                          <Input
+                            id="document-number"
+                            value={formData.document_number}
+                            onChange={(e) => setFormData(prev => ({ ...prev, document_number: e.target.value }))}
+                            className="h-12"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Método de Pagamento */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg flex items-center gap-2">
+                      <div className="w-2 h-6 rounded-full" style={{ backgroundColor: customization.primary_color }}></div>
+                      Método de Pagamento
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {customization.enable_credit_card && (
+                        <div 
+                          className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-300 ${
+                            paymentMethod === 'credit_card' ? 'ring-2' : 'hover:shadow-md'
+                          }`}
+                          style={{ 
+                            borderColor: paymentMethod === 'credit_card' ? customization.primary_color : '#e5e7eb',
+                            backgroundColor: paymentMethod === 'credit_card' ? `${customization.primary_color}10` : 'transparent'
+                          }}
+                          onClick={() => setPaymentMethod('credit_card')}
+                        >
+                          <div className="text-center">
+                            <CreditCard className="h-8 w-8 mx-auto mb-2" />
+                            <span className="text-sm font-medium">Cartão de Crédito</span>
+                          </div>
+                        </div>
+                      )}
+                      {customization.enable_debit_card && (
+                        <div 
+                          className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-300 ${
+                            paymentMethod === 'debit_card' ? 'ring-2' : 'hover:shadow-md'
+                          }`}
+                          style={{ 
+                            borderColor: paymentMethod === 'debit_card' ? customization.primary_color : '#e5e7eb',
+                            backgroundColor: paymentMethod === 'debit_card' ? `${customization.primary_color}10` : 'transparent'
+                          }}
+                          onClick={() => setPaymentMethod('debit_card')}
+                        >
+                          <div className="text-center">
+                            <CreditCard className="h-8 w-8 mx-auto mb-2" />
+                            <span className="text-sm font-medium">Cartão de Débito</span>
+                          </div>
+                        </div>
+                      )}
+                      {customization.enable_pix && (
+                        <div 
+                          className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-300 ${
+                            paymentMethod === 'pix' ? 'ring-2' : 'hover:shadow-md'
+                          }`}
+                          style={{ 
+                            borderColor: paymentMethod === 'pix' ? customization.primary_color : '#e5e7eb',
+                            backgroundColor: paymentMethod === 'pix' ? `${customization.primary_color}10` : 'transparent'
+                          }}
+                          onClick={() => setPaymentMethod('pix')}
+                        >
+                          <div className="text-center">
+                            <QrCode className="h-8 w-8 mx-auto mb-2" />
+                            <span className="text-sm font-medium">PIX</span>
+                          </div>
+                        </div>
+                      )}
+                      {customization.enable_boleto && (
+                        <div 
+                          className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-300 ${
+                            paymentMethod === 'boleto' ? 'ring-2' : 'hover:shadow-md'
+                          }`}
+                          style={{ 
+                            borderColor: paymentMethod === 'boleto' ? customization.primary_color : '#e5e7eb',
+                            backgroundColor: paymentMethod === 'boleto' ? `${customization.primary_color}10` : 'transparent'
+                          }}
+                          onClick={() => setPaymentMethod('boleto')}
+                        >
+                          <div className="text-center">
+                            <FileText className="h-8 w-8 mx-auto mb-2" />
+                            <span className="text-sm font-medium">Boleto</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Dados do Cartão */}
+                  {(paymentMethod === 'credit_card' || paymentMethod === 'debit_card') && (
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-lg flex items-center gap-2">
+                        <div className="w-2 h-6 rounded-full" style={{ backgroundColor: customization.primary_color }}></div>
+                        Dados do Cartão
+                      </h4>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="card-number">Número do Cartão</Label>
+                          <Input
+                            id="card-number"
+                            value={formData.card_number}
+                            onChange={(e) => setFormData(prev => ({ ...prev, card_number: e.target.value }))}
+                            placeholder="1234 5678 9012 3456"
+                            className="h-12"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="card-holder">Nome no Cartão</Label>
+                          <Input
+                            id="card-holder"
+                            value={formData.card_holder_name}
+                            onChange={(e) => setFormData(prev => ({ ...prev, card_holder_name: e.target.value }))}
+                            className="h-12"
+                            required
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          <div>
+                            <Label htmlFor="card-expiry">Validade</Label>
+                            <Input
+                              id="card-expiry"
+                              value={formData.card_expiry}
+                              onChange={(e) => setFormData(prev => ({ ...prev, card_expiry: e.target.value }))}
+                              placeholder="MM/AA"
+                              className="h-12"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="card-cvv">CVV</Label>
+                            <Input
+                              id="card-cvv"
+                              value={formData.card_cvv}
+                              onChange={(e) => setFormData(prev => ({ ...prev, card_cvv: e.target.value }))}
+                              placeholder="123"
+                              className="h-12"
+                              required
+                            />
+                          </div>
+                          {paymentMethod === 'credit_card' && (
+                            <div>
+                              <Label htmlFor="installments">Parcelas</Label>
+                              <Select
+                                value={formData.installments.toString()}
+                                onValueChange={(value) => setFormData(prev => ({ ...prev, installments: parseInt(value) }))}
+                              >
+                                <SelectTrigger className="h-12">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {[1,2,3,4,5,6,7,8,9,10,11,12].map(i => (
+                                    <SelectItem key={i} value={i.toString()}>
+                                      {i}x de {(totalAmount / i).toFixed(2)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Enhanced Payment Button */}
+                  <div className="pt-6">
+                    <Button 
+                      onClick={handlePayment} 
+                      disabled={loading}
+                      className="w-full h-16 text-xl font-bold shadow-2xl transition-all duration-300 hover:scale-105"
+                      style={{ 
+                        background: `linear-gradient(135deg, ${customization.primary_color}, ${customization.secondary_color})`,
+                        border: 'none'
+                      }}
+                    >
+                      {loading ? (
+                        <div className="flex items-center gap-3">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                          Processando Pagamento...
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-3">
+                          <Lock className="h-6 w-6" />
+                          <span>Finalizar Pagamento - {checkoutData.currency} {totalAmount.toFixed(2)}</span>
+                        </div>
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Enhanced Security Badges */}
+                  <div className="flex items-center justify-center gap-6 pt-6 border-t">
+                    <div className="flex items-center gap-2 text-sm opacity-75">
+                      <div className="p-2 rounded-full" style={{ backgroundColor: `${customization.primary_color}20` }}>
+                        <Shield className="h-4 w-4" style={{ color: customization.primary_color }} />
+                      </div>
+                      <span>Pagamento 100% Seguro</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm opacity-75">
+                      <div className="p-2 rounded-full" style={{ backgroundColor: `${customization.primary_color}20` }}>
+                        <Lock className="h-4 w-4" style={{ color: customization.primary_color }} />
+                      </div>
+                      <span>SSL Protegido</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>
