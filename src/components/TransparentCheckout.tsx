@@ -96,42 +96,44 @@ export const TransparentCheckout = () => {
     }
   }, [id]);
 
-  // Verificar status do pagamento periodicamente quando há um pagamento PIX ativo
+  // Verificação em tempo real via Supabase Realtime
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    if (!currentPaymentId) return;
+
+    console.log('🔔 Configurando realtime para payment:', currentPaymentId);
     
-    if (currentPaymentId && paymentMethod === 'pix') {
-      interval = setInterval(async () => {
-        try {
-          const { data } = await supabase
-            .from('payments')
-            .select('status')
-            .eq('mercadopago_payment_id', currentPaymentId)
-            .single();
-          
-          if (data?.status === 'approved') {
-            clearInterval(interval);
+    const channel = supabase
+      .channel('payment-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'payments',
+          filter: `mercadopago_payment_id=eq.${currentPaymentId}`
+        },
+        (payload: any) => {
+          console.log('💳 Pagamento atualizado via realtime:', payload);
+          if (payload.new.status === 'approved') {
             toast({
               title: "Pagamento Aprovado!",
-              description: "Seu pagamento PIX foi confirmado. Redirecionando...",
+              description: "Seu pagamento foi confirmado. Redirecionando...",
               variant: "default"
             });
             setTimeout(() => {
               navigate(`/payment-success?checkout_id=${id}&payment_id=${currentPaymentId}`);
-            }, 2000);
+            }, 1500);
           }
-        } catch (error) {
-          console.error('Erro ao verificar status do pagamento:', error);
         }
-      }, 3000); // Verificar a cada 3 segundos
-    }
+      )
+      .subscribe();
 
+    // Cleanup
     return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
+      console.log('🧹 Removendo canal realtime');
+      supabase.removeChannel(channel);
     };
-  }, [currentPaymentId, paymentMethod, id, navigate, toast]);
+  }, [currentPaymentId, id, navigate, toast]);
 
   const loadCheckoutData = async () => {
     try {
@@ -243,11 +245,14 @@ export const TransparentCheckout = () => {
         throw new Error('Resposta inválida do servidor');
       }
 
+      console.log('📊 Resposta do pagamento:', data);
+      
       // Redirecionar baseado no método de pagamento e status
       if (paymentMethod === 'pix') {
         // Armazenar ID do pagamento para verificação de status
         setCurrentPaymentId(data.payment_id);
         setPaymentStatus('pending');
+        console.log('🔔 PIX criado, ID:', data.payment_id);
         
         // Para PIX, sempre redirecionar para página de PIX com os dados
         const pixData = {

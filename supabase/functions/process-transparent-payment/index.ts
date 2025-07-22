@@ -140,7 +140,10 @@ const handler = async (req: Request): Promise<Response> => {
         'Authorization': `Bearer ${config.access_token}`,
         'X-Idempotency-Key': idempotencyKey
       },
-      body: JSON.stringify(paymentData)
+      body: JSON.stringify({
+        ...paymentData,
+        notification_url: "https://yutddrrtogmpakzfzaqz.supabase.co/functions/v1/mercadopago-webhook"
+      })
     });
 
     const mpData = await mpResponse.json();
