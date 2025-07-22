@@ -14,7 +14,7 @@ interface Notification {
   created_at: string;
 }
 
-function NotificationsList() {
+export function NotificationsList() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -219,5 +219,3 @@ function NotificationsList() {
     </Card>
   );
 }
-
-export default NotificationsList;
