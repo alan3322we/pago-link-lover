@@ -18,7 +18,7 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const webhookData = await req.json();
-    console.log('Webhook received:', webhookData);
+    console.log('🔔 Webhook Mercado Pago recebido:', JSON.stringify(webhookData, null, 2));
 
     // Buscar configuração do Mercado Pago
     const { data: config, error: configError } = await supabase
@@ -57,14 +57,16 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       const paymentData = await mpResponse.json();
-      console.log('Payment data from MP:', paymentData);
+      console.log('💳 Dados do pagamento no MP:', JSON.stringify(paymentData, null, 2));
 
-      // Buscar checkout link relacionado
+    // Buscar checkout link relacionado
       const { data: checkoutLink } = await supabase
         .from('checkout_links')
         .select('*')
         .eq('reference_id', paymentData.external_reference)
         .single();
+
+      console.log('Checkout link found:', checkoutLink);
 
       // Verificar se o pagamento já existe
       const { data: existingPayment } = await supabase
@@ -88,6 +90,8 @@ const handler = async (req: Request): Promise<Response> => {
         transaction_amount: paymentData.transaction_amount,
         net_received_amount: paymentData.transaction_details?.net_received_amount || null,
         fee_amount: paymentData.fee_details?.[0]?.amount || null,
+        order_bump_amount: paymentData.metadata?.order_bump_amount || 0,
+        order_bump_selected: paymentData.metadata?.order_bump_selected || false,
         webhook_data: paymentData
       };
 
@@ -137,6 +141,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         // Criar notificação apenas se houve mudança de status
         if (existingPayment.status !== paymentData.status) {
+          console.log(`🔄 Status alterado de ${existingPayment.status} para ${paymentData.status}`);
           await supabase
             .from('notifications')
             .insert({
@@ -144,6 +149,8 @@ const handler = async (req: Request): Promise<Response> => {
               type: notificationType,
               message: notificationMessage
             });
+        } else {
+          console.log(`ℹ️ Status mantido: ${paymentData.status} - não criando nova notificação`);
         }
       } else {
         // Criar novo pagamento
@@ -159,6 +166,7 @@ const handler = async (req: Request): Promise<Response> => {
         }
 
         // Criar notificação para novo pagamento
+        console.log(`✅ Novo pagamento criado: ${paymentData.status}`);
         await supabase
           .from('notifications')
           .insert({

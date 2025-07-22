@@ -194,7 +194,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Estruturar resposta baseada no método de pagamento
     let responseData: any = {
-      payment_id: mpData.id,
+      payment_id: mpData.id?.toString(),
       status: mpData.status,
       payment_method: mpData.payment_method_id,
       transaction_amount: mpData.transaction_amount,

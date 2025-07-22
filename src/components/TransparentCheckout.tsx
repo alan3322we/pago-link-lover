@@ -86,6 +86,8 @@ export const TransparentCheckout = () => {
     card_holder_name: '',
     installments: 1
   });
+  const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+  const [currentPaymentId, setCurrentPaymentId] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -93,6 +95,43 @@ export const TransparentCheckout = () => {
       loadCustomization();
     }
   }, [id]);
+
+  // Verificar status do pagamento periodicamente quando há um pagamento PIX ativo
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (currentPaymentId && paymentMethod === 'pix') {
+      interval = setInterval(async () => {
+        try {
+          const { data } = await supabase
+            .from('payments')
+            .select('status')
+            .eq('mercadopago_payment_id', currentPaymentId)
+            .single();
+          
+          if (data?.status === 'approved') {
+            clearInterval(interval);
+            toast({
+              title: "Pagamento Aprovado!",
+              description: "Seu pagamento PIX foi confirmado. Redirecionando...",
+              variant: "default"
+            });
+            setTimeout(() => {
+              navigate(`/payment-success?checkout_id=${id}&payment_id=${currentPaymentId}`);
+            }, 2000);
+          }
+        } catch (error) {
+          console.error('Erro ao verificar status do pagamento:', error);
+        }
+      }, 3000); // Verificar a cada 3 segundos
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [currentPaymentId, paymentMethod, id, navigate, toast]);
 
   const loadCheckoutData = async () => {
     try {
@@ -206,6 +245,10 @@ export const TransparentCheckout = () => {
 
       // Redirecionar baseado no método de pagamento e status
       if (paymentMethod === 'pix') {
+        // Armazenar ID do pagamento para verificação de status
+        setCurrentPaymentId(data.payment_id);
+        setPaymentStatus('pending');
+        
         // Para PIX, sempre redirecionar para página de PIX com os dados
         const pixData = {
           qr_code: data.pix_qr_code,
@@ -224,7 +267,8 @@ export const TransparentCheckout = () => {
         window.open(data.boleto_url, '_blank');
         navigate('/payment-pending');
       } else if (data.status === 'approved') {
-        navigate('/payment-success');
+        // Redirecionar para página de sucesso com dados do checkout
+        navigate(`/payment-success?checkout_id=${id}&payment_id=${data.payment_id}`);
       } else if (data.status === 'pending') {
         navigate('/payment-pending');
       } else {
