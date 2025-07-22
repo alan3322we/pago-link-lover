@@ -34,7 +34,25 @@ export const CheckoutCustomization = () => {
     order_bump_title: '',
     order_bump_description: '',
     order_bump_price: 0,
-    order_bump_image_url: ''
+    order_bump_image_url: '',
+    border_radius: '8px',
+    font_family: 'Inter',
+    button_style: 'rounded',
+    shadow_enabled: true,
+    gradient_enabled: false,
+    gradient_start_color: '#3B82F6',
+    gradient_end_color: '#10B981',
+    header_background_color: '#F8FAFC',
+    card_background_color: '#FFFFFF',
+    accent_color: '#F59E0B',
+    subtitle_color: '#6B7280',
+    border_color: '#E5E7EB',
+    hover_color: '#2563EB',
+    animation_enabled: true,
+    custom_css: '',
+    layout_style: 'modern',
+    button_size: 'large',
+    spacing_size: 'normal'
   });
 
   useEffect(() => {
@@ -151,7 +169,25 @@ export const CheckoutCustomization = () => {
         order_bump_title: '',
         order_bump_description: '',
         order_bump_price: 0,
-        order_bump_image_url: ''
+        order_bump_image_url: '',
+        border_radius: '8px',
+        font_family: 'Inter',
+        button_style: 'rounded',
+        shadow_enabled: true,
+        gradient_enabled: false,
+        gradient_start_color: '#3B82F6',
+        gradient_end_color: '#10B981',
+        header_background_color: '#F8FAFC',
+        card_background_color: '#FFFFFF',
+        accent_color: '#F59E0B',
+        subtitle_color: '#6B7280',
+        border_color: '#E5E7EB',
+        hover_color: '#2563EB',
+        animation_enabled: true,
+        custom_css: '',
+        layout_style: 'modern',
+        button_size: 'large',
+        spacing_size: 'normal'
       });
 
       toast({
@@ -321,6 +357,201 @@ export const CheckoutCustomization = () => {
           </CardContent>
         </Card>
 
+        {/* Configurações Avançadas */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Layout e Estilo
+            </CardTitle>
+            <CardDescription>
+              Personalize o visual do checkout
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="border-radius">Borda (Border Radius)</Label>
+                <Input
+                  id="border-radius"
+                  value={customization.border_radius}
+                  onChange={(e) => setCustomization(prev => ({
+                    ...prev,
+                    border_radius: e.target.value
+                  }))}
+                  placeholder="8px"
+                />
+              </div>
+              <div>
+                <Label htmlFor="font-family">Fonte</Label>
+                <Input
+                  id="font-family"
+                  value={customization.font_family}
+                  onChange={(e) => setCustomization(prev => ({
+                    ...prev,
+                    font_family: e.target.value
+                  }))}
+                  placeholder="Inter"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="accent-color">Cor de Destaque</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="color"
+                    value={customization.accent_color}
+                    onChange={(e) => setCustomization(prev => ({
+                      ...prev,
+                      accent_color: e.target.value
+                    }))}
+                    className="w-16 h-10 p-1 border rounded"
+                  />
+                  <Input
+                    value={customization.accent_color}
+                    onChange={(e) => setCustomization(prev => ({
+                      ...prev,
+                      accent_color: e.target.value
+                    }))}
+                    placeholder="#F59E0B"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="subtitle-color">Cor do Subtítulo</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="color"
+                    value={customization.subtitle_color}
+                    onChange={(e) => setCustomization(prev => ({
+                      ...prev,
+                      subtitle_color: e.target.value
+                    }))}
+                    className="w-16 h-10 p-1 border rounded"
+                  />
+                  <Input
+                    value={customization.subtitle_color}
+                    onChange={(e) => setCustomization(prev => ({
+                      ...prev,
+                      subtitle_color: e.target.value
+                    }))}
+                    placeholder="#6B7280"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="border-color">Cor da Borda</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="color"
+                    value={customization.border_color}
+                    onChange={(e) => setCustomization(prev => ({
+                      ...prev,
+                      border_color: e.target.value
+                    }))}
+                    className="w-16 h-10 p-1 border rounded"
+                  />
+                  <Input
+                    value={customization.border_color}
+                    onChange={(e) => setCustomization(prev => ({
+                      ...prev,
+                      border_color: e.target.value
+                    }))}
+                    placeholder="#E5E7EB"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="shadow-enabled">Sombra nos Cartões</Label>
+              <Switch
+                id="shadow-enabled"
+                checked={customization.shadow_enabled}
+                onCheckedChange={(checked) => setCustomization(prev => ({
+                  ...prev,
+                  shadow_enabled: checked
+                }))}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="gradient-enabled">Gradiente de Fundo</Label>
+              <Switch
+                id="gradient-enabled"
+                checked={customization.gradient_enabled}
+                onCheckedChange={(checked) => setCustomization(prev => ({
+                  ...prev,
+                  gradient_enabled: checked
+                }))}
+              />
+            </div>
+
+            {customization.gradient_enabled && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="gradient-start">Cor Inicial do Gradiente</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="color"
+                      value={customization.gradient_start_color}
+                      onChange={(e) => setCustomization(prev => ({
+                        ...prev,
+                        gradient_start_color: e.target.value
+                      }))}
+                      className="w-16 h-10 p-1 border rounded"
+                    />
+                    <Input
+                      value={customization.gradient_start_color}
+                      onChange={(e) => setCustomization(prev => ({
+                        ...prev,
+                        gradient_start_color: e.target.value
+                      }))}
+                      placeholder="#3B82F6"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="gradient-end">Cor Final do Gradiente</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="color"
+                      value={customization.gradient_end_color}
+                      onChange={(e) => setCustomization(prev => ({
+                        ...prev,
+                        gradient_end_color: e.target.value
+                      }))}
+                      className="w-16 h-10 p-1 border rounded"
+                    />
+                    <Input
+                      value={customization.gradient_end_color}
+                      onChange={(e) => setCustomization(prev => ({
+                        ...prev,
+                        gradient_end_color: e.target.value
+                      }))}
+                      placeholder="#10B981"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="animation-enabled">Animações</Label>
+              <Switch
+                id="animation-enabled"
+                checked={customization.animation_enabled}
+                onCheckedChange={(checked) => setCustomization(prev => ({
+                  ...prev,
+                  animation_enabled: checked
+                }))}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Métodos de Pagamento */}
         <Card>
           <CardHeader>
@@ -459,10 +690,10 @@ export const CheckoutCustomization = () => {
       </div>
 
       <div className="flex gap-2">
-        <Button onClick={handleSave} disabled={loading} className="flex-1">
+        <Button onClick={handleSave} disabled={loading} className="flex-1 bg-green-600 hover:bg-green-700">
           {loading ? 'Salvando...' : 'Salvar Personalização'}
         </Button>
-        <Button variant="outline" onClick={() => window.open('/checkout-preview', '_blank')}>
+        <Button variant="default" className="bg-blue-600 hover:bg-blue-700" onClick={() => window.open('/checkout-preview', '_blank')}>
           <Eye className="h-4 w-4 mr-2" />
           Visualizar
         </Button>

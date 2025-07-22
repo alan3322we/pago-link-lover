@@ -45,6 +45,7 @@ export function CheckoutLinksList({ refresh, onRefreshComplete }: CheckoutLinksL
       const { data, error } = await supabase
         .from('checkout_links')
         .select('*')
+        .eq('is_active', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
