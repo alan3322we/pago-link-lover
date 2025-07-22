@@ -14,6 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
+      checkout_customization: {
+        Row: {
+          background_color: string
+          background_image_url: string | null
+          checkout_description: string | null
+          checkout_title: string
+          company_name: string
+          created_at: string
+          enable_boleto: boolean
+          enable_credit_card: boolean
+          enable_debit_card: boolean
+          enable_order_bump: boolean
+          enable_pix: boolean
+          id: string
+          logo_url: string | null
+          order_bump_description: string | null
+          order_bump_image_url: string | null
+          order_bump_price: number | null
+          order_bump_title: string | null
+          primary_color: string
+          secondary_color: string
+          show_company_logo: boolean
+          show_payment_methods: boolean
+          show_security_badges: boolean
+          success_message: string
+          text_color: string
+          updated_at: string
+        }
+        Insert: {
+          background_color?: string
+          background_image_url?: string | null
+          checkout_description?: string | null
+          checkout_title?: string
+          company_name?: string
+          created_at?: string
+          enable_boleto?: boolean
+          enable_credit_card?: boolean
+          enable_debit_card?: boolean
+          enable_order_bump?: boolean
+          enable_pix?: boolean
+          id?: string
+          logo_url?: string | null
+          order_bump_description?: string | null
+          order_bump_image_url?: string | null
+          order_bump_price?: number | null
+          order_bump_title?: string | null
+          primary_color?: string
+          secondary_color?: string
+          show_company_logo?: boolean
+          show_payment_methods?: boolean
+          show_security_badges?: boolean
+          success_message?: string
+          text_color?: string
+          updated_at?: string
+        }
+        Update: {
+          background_color?: string
+          background_image_url?: string | null
+          checkout_description?: string | null
+          checkout_title?: string
+          company_name?: string
+          created_at?: string
+          enable_boleto?: boolean
+          enable_credit_card?: boolean
+          enable_debit_card?: boolean
+          enable_order_bump?: boolean
+          enable_pix?: boolean
+          id?: string
+          logo_url?: string | null
+          order_bump_description?: string | null
+          order_bump_image_url?: string | null
+          order_bump_price?: number | null
+          order_bump_title?: string | null
+          primary_color?: string
+          secondary_color?: string
+          show_company_logo?: boolean
+          show_payment_methods?: boolean
+          show_security_badges?: boolean
+          success_message?: string
+          text_color?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       checkout_links: {
         Row: {
           amount: number
@@ -124,16 +208,63 @@ export type Database = {
           },
         ]
       }
+      order_bumps: {
+        Row: {
+          checkout_link_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          price: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          checkout_link_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          price: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          checkout_link_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          price?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_bumps_checkout_link_id_fkey"
+            columns: ["checkout_link_id"]
+            isOneToOne: false
+            referencedRelation: "checkout_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
           checkout_link_id: string | null
           created_at: string
           currency: string
+          customer_data: Json | null
           fee_amount: number | null
           id: string
           mercadopago_payment_id: string
           net_received_amount: number | null
+          order_bump_amount: number | null
+          order_bump_selected: boolean | null
           payer_document_number: string | null
           payer_document_type: string | null
           payer_email: string | null
@@ -150,10 +281,13 @@ export type Database = {
           checkout_link_id?: string | null
           created_at?: string
           currency: string
+          customer_data?: Json | null
           fee_amount?: number | null
           id?: string
           mercadopago_payment_id: string
           net_received_amount?: number | null
+          order_bump_amount?: number | null
+          order_bump_selected?: boolean | null
           payer_document_number?: string | null
           payer_document_type?: string | null
           payer_email?: string | null
@@ -170,10 +304,13 @@ export type Database = {
           checkout_link_id?: string | null
           created_at?: string
           currency?: string
+          customer_data?: Json | null
           fee_amount?: number | null
           id?: string
           mercadopago_payment_id?: string
           net_received_amount?: number | null
+          order_bump_amount?: number | null
+          order_bump_selected?: boolean | null
           payer_document_number?: string | null
           payer_document_type?: string | null
           payer_email?: string | null

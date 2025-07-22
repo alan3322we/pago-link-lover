@@ -8,6 +8,7 @@ import { CheckoutLinkForm } from '@/components/CheckoutLinkForm';
 import { CheckoutLinksList } from '@/components/CheckoutLinksList';
 import { PaymentsList } from '@/components/PaymentsList';
 import { NotificationsList } from '@/components/NotificationsList';
+import { CheckoutCustomization } from '@/components/CheckoutCustomization';
 import { supabase } from '@/integrations/supabase/client';
 import { Toaster } from '@/components/ui/toaster';
 import { CreditCard, Link, Settings, Bell, DollarSign, TrendingUp } from 'lucide-react';
@@ -194,10 +195,14 @@ const Index = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="links" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-[600px] mx-auto">
+          <TabsList className="grid w-full grid-cols-5 lg:w-[700px] mx-auto">
             <TabsTrigger value="links" className="flex items-center gap-2">
               <Link className="h-4 w-4" />
               Links
+            </TabsTrigger>
+            <TabsTrigger value="checkout" className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              Checkout
             </TabsTrigger>
             <TabsTrigger value="payments" className="flex items-center gap-2">
               <CreditCard className="h-4 w-4" />
@@ -225,6 +230,10 @@ const Index = () => {
                 />
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="checkout">
+            <CheckoutCustomization />
           </TabsContent>
 
           <TabsContent value="payments">

@@ -8,6 +8,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailure from "./pages/PaymentFailure";
 import PaymentPending from "./pages/PaymentPending";
 import NotFound from "./pages/NotFound";
+import { TransparentCheckout } from "./components/TransparentCheckout";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/checkout/:id" element={<TransparentCheckout />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-failure" element={<PaymentFailure />} />
           <Route path="/payment-pending" element={<PaymentPending />} />
