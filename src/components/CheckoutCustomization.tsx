@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Upload, Palette, Settings, Eye, Trash2 } from 'lucide-react';
 
-export const CheckoutCustomization = () => {
+const CheckoutCustomization = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [customization, setCustomization] = useState({
@@ -705,3 +705,5 @@ export const CheckoutCustomization = () => {
     </div>
   );
 };
+
+export default CheckoutCustomization;
