@@ -21,15 +21,18 @@ interface CheckoutData {
 }
 
 interface CustomizationData {
+  checkout_title: string;
+  checkout_description?: string;
+  company_name: string;
   primary_color: string;
   secondary_color: string;
   background_color: string;
   text_color: string;
   logo_url?: string;
   background_image_url?: string;
-  company_name: string;
-  checkout_title: string;
-  checkout_description?: string;
+  show_company_logo: boolean;
+  show_security_badges: boolean;
+  show_payment_methods: boolean;
   enable_credit_card: boolean;
   enable_debit_card: boolean;
   enable_pix: boolean;
@@ -39,6 +42,26 @@ interface CustomizationData {
   order_bump_description?: string;
   order_bump_price?: number;
   order_bump_image_url?: string;
+  success_message: string;
+  // Novas personalizações avançadas
+  border_radius?: string;
+  font_family?: string;
+  button_style?: string;
+  shadow_enabled?: boolean;
+  gradient_enabled?: boolean;
+  gradient_start_color?: string;
+  gradient_end_color?: string;
+  header_background_color?: string;
+  card_background_color?: string;
+  accent_color?: string;
+  subtitle_color?: string;
+  border_color?: string;
+  hover_color?: string;
+  animation_enabled?: boolean;
+  custom_css?: string;
+  layout_style?: string;
+  button_size?: string;
+  spacing_size?: string;
 }
 
 export const TransparentCheckout = () => {
@@ -237,10 +260,18 @@ export const TransparentCheckout = () => {
 
   return (
     <div 
-      className="min-h-screen"
+      className={`min-h-screen ${customization.animation_enabled ? 'transition-all duration-300' : ''}`}
       style={{ 
-        background: `linear-gradient(135deg, ${customization.background_color} 0%, ${customization.secondary_color}15 100%)`,
-        color: customization.text_color 
+        background: customization.gradient_enabled 
+          ? `linear-gradient(135deg, ${customization.gradient_start_color}, ${customization.gradient_end_color})`
+          : customization.background_image_url 
+            ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${customization.background_image_url})`
+            : customization.background_color,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        color: customization.text_color,
+        fontFamily: customization.font_family || 'Inter'
       }}
     >
       {/* Background Image Overlay */}
@@ -255,8 +286,15 @@ export const TransparentCheckout = () => {
         <div className="max-w-6xl mx-auto">
           {/* Enhanced Header */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center p-2 rounded-full mb-6" 
-                 style={{ backgroundColor: `${customization.primary_color}20` }}>
+            <div 
+              className={`inline-flex items-center justify-center p-2 mb-6 ${
+                customization.animation_enabled ? 'transition-all duration-300 hover:scale-105' : ''
+              } ${customization.shadow_enabled ? 'shadow-lg' : ''}`}
+              style={{ 
+                backgroundColor: `${customization.primary_color}20`,
+                borderRadius: customization.border_radius || '50%'
+              }}
+            >
               {customization.logo_url ? (
                 <img 
                   src={customization.logo_url} 
@@ -264,8 +302,14 @@ export const TransparentCheckout = () => {
                   className="h-20 w-auto"
                 />
               ) : (
-                <div className="h-16 w-16 rounded-full flex items-center justify-center text-2xl font-bold"
-                     style={{ backgroundColor: customization.primary_color, color: customization.background_color }}>
+                <div 
+                  className="h-16 w-16 flex items-center justify-center text-2xl font-bold"
+                  style={{ 
+                    backgroundColor: customization.primary_color, 
+                    color: customization.background_color,
+                    borderRadius: customization.border_radius === '32px' ? '50%' : customization.border_radius || '50%'
+                  }}
+                >
                   {customization.company_name.charAt(0)}
                 </div>
               )}
@@ -274,14 +318,28 @@ export const TransparentCheckout = () => {
               {customization.checkout_title}
             </h1>
             {customization.checkout_description && (
-              <p className="text-xl opacity-80 max-w-2xl mx-auto">{customization.checkout_description}</p>
+              <p 
+                className="text-xl max-w-2xl mx-auto"
+                style={{ color: customization.subtitle_color || customization.text_color }}
+              >
+                {customization.checkout_description}
+              </p>
             )}
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
             {/* Product Summary - Enhanced */}
             <div className="xl:col-span-1">
-              <Card className="sticky top-8 shadow-2xl border-0" style={{ backgroundColor: `${customization.background_color}f5` }}>
+              <Card 
+                className={`sticky top-8 border-0 ${
+                  customization.shadow_enabled ? 'shadow-2xl' : 'shadow-md'
+                } ${customization.animation_enabled ? 'transition-all duration-300 hover:shadow-3xl' : ''}`}
+                style={{ 
+                  backgroundColor: customization.card_background_color || `${customization.background_color}f5`,
+                  borderRadius: customization.border_radius || '12px',
+                  borderColor: customization.border_color
+                }}
+              >
                 <CardHeader className="pb-4">
                   <CardTitle className="text-2xl flex items-center gap-3">
                     <div className="w-3 h-8 rounded-full" style={{ backgroundColor: customization.primary_color }}></div>
@@ -401,7 +459,16 @@ export const TransparentCheckout = () => {
 
             {/* Payment Form - Enhanced */}
             <div className="xl:col-span-2">
-              <Card className="shadow-2xl border-0" style={{ backgroundColor: `${customization.background_color}f5` }}>
+              <Card 
+                className={`border-0 ${
+                  customization.shadow_enabled ? 'shadow-2xl' : 'shadow-md'
+                } ${customization.animation_enabled ? 'transition-all duration-300' : ''}`}
+                style={{ 
+                  backgroundColor: customization.card_background_color || `${customization.background_color}f5`,
+                  borderRadius: customization.border_radius || '12px',
+                  borderColor: customization.border_color
+                }}
+              >
                 <CardHeader className="pb-4">
                   <CardTitle className="text-2xl flex items-center gap-3">
                     <div className="w-3 h-8 rounded-full" style={{ backgroundColor: customization.secondary_color }}></div>

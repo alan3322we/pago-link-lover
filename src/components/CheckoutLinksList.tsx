@@ -97,9 +97,8 @@ export function CheckoutLinksList({ refresh, onRefreshComplete }: CheckoutLinksL
 
       if (error) throw error;
 
-      setLinks(links.map(link => 
-        link.id === id ? { ...link, is_active: !currentStatus } : link
-      ));
+      // Forçar atualização da lista
+      await fetchLinks();
 
       toast({
         title: currentStatus ? "Link desativado" : "Link ativado",
@@ -112,6 +111,8 @@ export function CheckoutLinksList({ refresh, onRefreshComplete }: CheckoutLinksL
         description: "Não foi possível alterar o status do link.",
         variant: "destructive",
       });
+      // Forçar atualização mesmo com erro
+      await fetchLinks();
     }
   };
 
@@ -119,13 +120,14 @@ export function CheckoutLinksList({ refresh, onRefreshComplete }: CheckoutLinksL
     setDeletingIds(prev => new Set(prev).add(id));
     
     try {
-      const { error } = await supabase.functions.invoke('delete-checkout-link', {
+      const { data, error } = await supabase.functions.invoke('delete-checkout-link', {
         body: { linkId: id }
       });
 
       if (error) throw error;
 
-      setLinks(links.filter(link => link.id !== id));
+      // Forçar atualização da lista após deletar
+      await fetchLinks();
       
       toast({
         title: "Link deletado",
@@ -135,9 +137,11 @@ export function CheckoutLinksList({ refresh, onRefreshComplete }: CheckoutLinksL
       console.error('Error deleting link:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível deletar o link.",
+        description: error.message || "Não foi possível deletar o link.",
         variant: "destructive",
       });
+      // Forçar atualização mesmo com erro para mostrar estado real
+      await fetchLinks();
     } finally {
       setDeletingIds(prev => {
         const newSet = new Set(prev);

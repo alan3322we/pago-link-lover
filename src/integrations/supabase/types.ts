@@ -16,18 +16,33 @@ export type Database = {
     Tables: {
       checkout_customization: {
         Row: {
+          accent_color: string | null
+          animation_enabled: boolean | null
           background_color: string
           background_image_url: string | null
+          border_color: string | null
+          border_radius: string | null
+          button_size: string | null
+          button_style: string | null
+          card_background_color: string | null
           checkout_description: string | null
           checkout_title: string
           company_name: string
           created_at: string
+          custom_css: string | null
           enable_boleto: boolean
           enable_credit_card: boolean
           enable_debit_card: boolean
           enable_order_bump: boolean
           enable_pix: boolean
+          font_family: string | null
+          gradient_enabled: boolean | null
+          gradient_end_color: string | null
+          gradient_start_color: string | null
+          header_background_color: string | null
+          hover_color: string | null
           id: string
+          layout_style: string | null
           logo_url: string | null
           order_bump_description: string | null
           order_bump_image_url: string | null
@@ -35,26 +50,44 @@ export type Database = {
           order_bump_title: string | null
           primary_color: string
           secondary_color: string
+          shadow_enabled: boolean | null
           show_company_logo: boolean
           show_payment_methods: boolean
           show_security_badges: boolean
+          spacing_size: string | null
+          subtitle_color: string | null
           success_message: string
           text_color: string
           updated_at: string
         }
         Insert: {
+          accent_color?: string | null
+          animation_enabled?: boolean | null
           background_color?: string
           background_image_url?: string | null
+          border_color?: string | null
+          border_radius?: string | null
+          button_size?: string | null
+          button_style?: string | null
+          card_background_color?: string | null
           checkout_description?: string | null
           checkout_title?: string
           company_name?: string
           created_at?: string
+          custom_css?: string | null
           enable_boleto?: boolean
           enable_credit_card?: boolean
           enable_debit_card?: boolean
           enable_order_bump?: boolean
           enable_pix?: boolean
+          font_family?: string | null
+          gradient_enabled?: boolean | null
+          gradient_end_color?: string | null
+          gradient_start_color?: string | null
+          header_background_color?: string | null
+          hover_color?: string | null
           id?: string
+          layout_style?: string | null
           logo_url?: string | null
           order_bump_description?: string | null
           order_bump_image_url?: string | null
@@ -62,26 +95,44 @@ export type Database = {
           order_bump_title?: string | null
           primary_color?: string
           secondary_color?: string
+          shadow_enabled?: boolean | null
           show_company_logo?: boolean
           show_payment_methods?: boolean
           show_security_badges?: boolean
+          spacing_size?: string | null
+          subtitle_color?: string | null
           success_message?: string
           text_color?: string
           updated_at?: string
         }
         Update: {
+          accent_color?: string | null
+          animation_enabled?: boolean | null
           background_color?: string
           background_image_url?: string | null
+          border_color?: string | null
+          border_radius?: string | null
+          button_size?: string | null
+          button_style?: string | null
+          card_background_color?: string | null
           checkout_description?: string | null
           checkout_title?: string
           company_name?: string
           created_at?: string
+          custom_css?: string | null
           enable_boleto?: boolean
           enable_credit_card?: boolean
           enable_debit_card?: boolean
           enable_order_bump?: boolean
           enable_pix?: boolean
+          font_family?: string | null
+          gradient_enabled?: boolean | null
+          gradient_end_color?: string | null
+          gradient_start_color?: string | null
+          header_background_color?: string | null
+          hover_color?: string | null
           id?: string
+          layout_style?: string | null
           logo_url?: string | null
           order_bump_description?: string | null
           order_bump_image_url?: string | null
@@ -89,9 +140,12 @@ export type Database = {
           order_bump_title?: string | null
           primary_color?: string
           secondary_color?: string
+          shadow_enabled?: boolean | null
           show_company_logo?: boolean
           show_payment_methods?: boolean
           show_security_badges?: boolean
+          spacing_size?: string | null
+          subtitle_color?: string | null
           success_message?: string
           text_color?: string
           updated_at?: string
