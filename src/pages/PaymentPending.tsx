@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, QrCode, Copy, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const PaymentPending = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [pixData, setPixData] = useState<any>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
@@ -53,6 +55,55 @@ const PaymentPending = () => {
       return () => clearInterval(interval);
     }
   }, [pixData]);
+
+  // Realtime para redirecionamento automático quando pagamento aprovado
+  useEffect(() => {
+    if (!pixData?.payment_id) return;
+
+    console.log('🔔 [PaymentPending] Configurando realtime para payment:', pixData.payment_id);
+    
+    const channel = supabase
+      .channel(`payment-pending-${pixData.payment_id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'payments',
+          filter: `mercadopago_payment_id=eq.${pixData.payment_id}`
+        },
+        (payload: any) => {
+          console.log('💳 [PaymentPending] Status atualizado:', payload.new?.status);
+          
+          if (payload.new && payload.new.status === 'approved') {
+            console.log('✅ [PaymentPending] Pagamento aprovado! Redirecionando...');
+            
+            toast({
+              title: "Pagamento Aprovado!",
+              description: "Redirecionando para entrega do produto...",
+              variant: "default"
+            });
+            
+            // Redirecionamento imediato
+            const checkoutId = searchParams.get('checkout_id');
+            if (checkoutId) {
+              navigate(`/payment-success?checkout_id=${checkoutId}&payment_id=${pixData.payment_id}`, { replace: true });
+            } else {
+              navigate(`/payment-success?payment_id=${pixData.payment_id}`, { replace: true });
+            }
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 [PaymentPending] Status da subscription:', status);
+      });
+
+    // Cleanup
+    return () => {
+      console.log('🧹 [PaymentPending] Removendo canal realtime');
+      supabase.removeChannel(channel);
+    };
+  }, [pixData?.payment_id, navigate, toast, searchParams]);
 
   const copyToClipboard = (text: string, type: string) => {
     navigator.clipboard.writeText(text);

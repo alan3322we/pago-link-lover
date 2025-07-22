@@ -96,14 +96,14 @@ export const TransparentCheckout = () => {
     }
   }, [id]);
 
-  // Verificação em tempo real via Supabase Realtime
+  // Verificação em tempo real via Supabase Realtime para redirecionamento automático
   useEffect(() => {
     if (!currentPaymentId) return;
 
-    console.log('🔔 Configurando realtime para payment:', currentPaymentId);
+    console.log('🔔 Configurando realtime para payment ID:', currentPaymentId);
     
     const channel = supabase
-      .channel('payment-updates')
+      .channel(`payment-${currentPaymentId}`)
       .on(
         'postgres_changes',
         {
@@ -113,24 +113,34 @@ export const TransparentCheckout = () => {
           filter: `mercadopago_payment_id=eq.${currentPaymentId}`
         },
         (payload: any) => {
-          console.log('💳 Pagamento atualizado via realtime:', payload);
-          if (payload.new.status === 'approved') {
+          console.log('💳 Status atualizado via realtime:', payload.new?.status);
+          console.log('💳 Payload completo:', payload);
+          
+          if (payload.new && payload.new.status === 'approved') {
+            console.log('✅ Pagamento aprovado! Iniciando redirecionamento...');
+            
+            // Limpar qualquer timeout anterior
+            setPaymentStatus('approved');
+            
             toast({
               title: "Pagamento Aprovado!",
-              description: "Seu pagamento foi confirmado. Redirecionando...",
+              description: "Redirecionando para entrega do produto...",
               variant: "default"
             });
-            setTimeout(() => {
-              navigate(`/payment-success?checkout_id=${id}&payment_id=${currentPaymentId}`);
-            }, 1500);
+            
+            // Redirecionamento imediato
+            console.log('🔄 Redirecionando para:', `/payment-success?checkout_id=${id}&payment_id=${currentPaymentId}`);
+            navigate(`/payment-success?checkout_id=${id}&payment_id=${currentPaymentId}`, { replace: true });
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('📡 Status da subscription realtime:', status);
+      });
 
-    // Cleanup
+    // Cleanup ao desmontar ou trocar payment ID
     return () => {
-      console.log('🧹 Removendo canal realtime');
+      console.log('🧹 Removendo canal realtime para payment:', currentPaymentId);
       supabase.removeChannel(channel);
     };
   }, [currentPaymentId, id, navigate, toast]);
