@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Upload, Palette, Settings, Eye } from 'lucide-react';
+import { Upload, Palette, Settings, Eye, Trash2 } from 'lucide-react';
 
 export const CheckoutCustomization = () => {
   const { toast } = useToast();
@@ -47,7 +47,7 @@ export const CheckoutCustomization = () => {
         .from('checkout_customization')
         .select('*')
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (data && !error) {
         setCustomization(data);
@@ -109,6 +109,59 @@ export const CheckoutCustomization = () => {
     } catch (error: any) {
       toast({
         title: "Erro ao salvar",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReset = async () => {
+    setLoading(true);
+    try {
+      // Delete existing configuration
+      const { error: deleteError } = await supabase
+        .from('checkout_customization')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
+
+      if (deleteError) throw deleteError;
+
+      // Reset to default values
+      setCustomization({
+        primary_color: '#3B82F6',
+        secondary_color: '#10B981',
+        background_color: '#FFFFFF',
+        text_color: '#1F2937',
+        logo_url: '',
+        background_image_url: '',
+        company_name: 'Minha Empresa',
+        checkout_title: 'Finalizar Compra',
+        checkout_description: '',
+        success_message: 'Pagamento realizado com sucesso!',
+        show_company_logo: true,
+        show_security_badges: true,
+        show_payment_methods: true,
+        enable_credit_card: true,
+        enable_debit_card: true,
+        enable_pix: true,
+        enable_boleto: true,
+        enable_order_bump: false,
+        order_bump_title: '',
+        order_bump_description: '',
+        order_bump_price: 0,
+        order_bump_image_url: ''
+      });
+
+      toast({
+        title: "Configuração resetada!",
+        description: "A personalização foi restaurada aos valores padrão.",
+      });
+
+    } catch (error: any) {
+      toast({
+        title: "Erro ao resetar",
         description: error.message,
         variant: "destructive",
       });
@@ -223,7 +276,7 @@ export const CheckoutCustomization = () => {
               <Label htmlFor="checkout-description">Descrição</Label>
               <Textarea
                 id="checkout-description"
-                value={customization.checkout_description}
+                value={customization.checkout_description || ''}
                 onChange={(e) => setCustomization(prev => ({
                   ...prev,
                   checkout_description: e.target.value
@@ -391,7 +444,7 @@ export const CheckoutCustomization = () => {
                   <Label htmlFor="order-bump-description">Descrição da Oferta</Label>
                   <Textarea
                     id="order-bump-description"
-                    value={customization.order_bump_description}
+                    value={customization.order_bump_description || ''}
                     onChange={(e) => setCustomization(prev => ({
                       ...prev,
                       order_bump_description: e.target.value
@@ -412,6 +465,10 @@ export const CheckoutCustomization = () => {
         <Button variant="outline" onClick={() => window.open('/checkout-preview', '_blank')}>
           <Eye className="h-4 w-4 mr-2" />
           Visualizar
+        </Button>
+        <Button variant="destructive" onClick={handleReset} disabled={loading}>
+          <Trash2 className="h-4 w-4 mr-2" />
+          Resetar
         </Button>
       </div>
     </div>
