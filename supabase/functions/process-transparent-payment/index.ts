@@ -87,12 +87,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     const totalAmount = Number(checkoutLink.amount) + orderBumpAmount;
 
-    // Preparar dados do pagamento
-    const paymentData: any = {
+    // Gerar chave de idempotência única
+    const idempotencyKey = `${checkout_link_id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Preparar dados do pagamento baseado no método
+    let paymentData: any = {
       transaction_amount: totalAmount,
-      token: card_data?.token,
-      installments: card_data?.installments || 1,
-      payment_method_id: payment_method === 'credit_card' ? 'visa' : payment_method,
       payer: {
         email: customer_data.email,
         identification: {
@@ -111,6 +111,20 @@ const handler = async (req: Request): Promise<Response> => {
       }
     };
 
+    // Configurar dados específicos por método de pagamento
+    if (payment_method === 'credit_card') {
+      paymentData.token = card_data?.token;
+      paymentData.installments = card_data?.installments || 1;
+      paymentData.payment_method_id = 'visa'; // Será determinado pelo token
+    } else if (payment_method === 'debit_card') {
+      paymentData.token = card_data?.token;
+      paymentData.payment_method_id = 'debvisa'; // Será determinado pelo token
+    } else if (payment_method === 'pix') {
+      paymentData.payment_method_id = 'pix';
+    } else if (payment_method === 'boleto') {
+      paymentData.payment_method_id = 'bolbradesco';
+    }
+
     // Criar pagamento no Mercado Pago
     const mpUrl = config.is_sandbox 
       ? 'https://api.mercadopago.com/v1/payments'
@@ -120,7 +134,8 @@ const handler = async (req: Request): Promise<Response> => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.access_token}`
+        'Authorization': `Bearer ${config.access_token}`,
+        'X-Idempotency-Key': idempotencyKey
       },
       body: JSON.stringify(paymentData)
     });

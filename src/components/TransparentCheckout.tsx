@@ -117,6 +117,27 @@ export const TransparentCheckout = () => {
   const handlePayment = async () => {
     if (!checkoutData) return;
 
+    // Validar campos obrigatórios
+    if (!formData.name || !formData.email || !formData.phone || !formData.document_number) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha todos os campos obrigatórios",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validar dados do cartão se necessário
+    if ((paymentMethod === 'credit_card' || paymentMethod === 'debit_card') && 
+        (!formData.card_number || !formData.card_holder_name || !formData.card_expiry || !formData.card_cvv)) {
+      toast({
+        title: "Dados do cartão incompletos",
+        description: "Por favor, preencha todos os dados do cartão",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       // Simular tokenização do cartão (normalmente feito com SDK do Mercado Pago)
@@ -131,7 +152,7 @@ export const TransparentCheckout = () => {
         payment_method: paymentMethod,
         card_data: (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') ? {
           token: cardToken,
-          installments: formData.installments
+          installments: formData.installments || 1
         } : undefined,
         customer_data: {
           name: formData.name,
@@ -147,9 +168,16 @@ export const TransparentCheckout = () => {
         body: paymentData
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Payment error:', error);
+        throw new Error(error.message || 'Erro ao processar pagamento');
+      }
 
-      // Redirecionar baseado no método de pagamento
+      if (!data) {
+        throw new Error('Resposta inválida do servidor');
+      }
+
+      // Redirecionar baseado no método de pagamento e status
       if (paymentMethod === 'pix' && data.pix_qr_code) {
         navigate(`/payment-pending?pix_code=${encodeURIComponent(data.pix_qr_code)}`);
       } else if (paymentMethod === 'boleto' && data.boleto_url) {
@@ -157,14 +185,25 @@ export const TransparentCheckout = () => {
         navigate('/payment-pending');
       } else if (data.status === 'approved') {
         navigate('/payment-success');
-      } else {
+      } else if (data.status === 'pending') {
         navigate('/payment-pending');
+      } else {
+        navigate('/payment-failure');
       }
 
     } catch (error: any) {
+      console.error('Payment processing error:', error);
+      let errorMessage = 'Erro desconhecido ao processar pagamento';
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+
       toast({
         title: "Erro no pagamento",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
