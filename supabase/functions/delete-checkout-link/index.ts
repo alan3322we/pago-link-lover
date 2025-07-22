@@ -78,10 +78,18 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Deletar completamente do banco agora
-    await supabase
+    const { error: finalDeleteError } = await supabase
       .from('checkout_links')
       .delete()
       .eq('id', linkId);
+
+    if (finalDeleteError) {
+      console.error('Final delete error:', finalDeleteError);
+      return new Response(
+        JSON.stringify({ error: 'Erro ao deletar definitivamente', details: finalDeleteError }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
 
     return new Response(
       JSON.stringify({ success: true }),

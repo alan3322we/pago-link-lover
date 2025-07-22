@@ -270,7 +270,7 @@ export const TransparentCheckout = () => {
                 </div>
               )}
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ color: customization.text_color }}>
               {customization.checkout_title}
             </h1>
             {customization.checkout_description && (
