@@ -269,6 +269,7 @@ export type Database = {
         Row: {
           checkout_link_id: string | null
           created_at: string
+          delivery_link: string | null
           description: string | null
           id: string
           image_url: string | null
@@ -280,6 +281,7 @@ export type Database = {
         Insert: {
           checkout_link_id?: string | null
           created_at?: string
+          delivery_link?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
@@ -291,6 +293,7 @@ export type Database = {
         Update: {
           checkout_link_id?: string | null
           created_at?: string
+          delivery_link?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
@@ -389,6 +392,39 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          is_active: boolean
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -413,6 +449,10 @@ export type Database = {
       delete_payment: {
         Args: { payment_id: string }
         Returns: Json
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
     }
     Enums: {
