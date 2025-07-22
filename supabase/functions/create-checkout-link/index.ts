@@ -11,6 +11,7 @@ interface CreateCheckoutRequest {
   description?: string;
   amount: number;
   currency?: string;
+  image_url?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -24,7 +25,7 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    const { title, description, amount, currency = 'BRL' }: CreateCheckoutRequest = await req.json();
+    const { title, description, amount, currency = 'BRL', image_url }: CreateCheckoutRequest = await req.json();
 
     // Buscar configuração do Mercado Pago
     const { data: config, error: configError } = await supabase
@@ -94,6 +95,7 @@ const handler = async (req: Request): Promise<Response> => {
         description,
         amount,
         currency,
+        image_url,
         reference_id,
         mercadopago_preference_id: mpData.id,
         checkout_url: mpData.init_point,

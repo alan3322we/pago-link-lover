@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.save-config]
 verify_jwt = false
+
+[functions.delete-checkout-link]
+verify_jwt = false

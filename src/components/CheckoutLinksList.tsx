@@ -4,7 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Copy, ExternalLink, Eye, EyeOff } from 'lucide-react';
+import { Copy, ExternalLink, Eye, EyeOff, Trash2, Image } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface CheckoutLink {
   id: string;
@@ -13,6 +24,7 @@ interface CheckoutLink {
   amount: number;
   currency: string;
   checkout_url: string | null;
+  image_url: string | null;
   is_active: boolean;
   created_at: string;
 }
@@ -25,6 +37,7 @@ interface CheckoutLinksListProps {
 export function CheckoutLinksList({ refresh, onRefreshComplete }: CheckoutLinksListProps) {
   const [links, setLinks] = useState<CheckoutLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   const fetchLinks = async () => {
@@ -102,6 +115,38 @@ export function CheckoutLinksList({ refresh, onRefreshComplete }: CheckoutLinksL
     }
   };
 
+  const deleteLink = async (id: string) => {
+    setDeletingIds(prev => new Set(prev).add(id));
+    
+    try {
+      const { error } = await supabase.functions.invoke('delete-checkout-link', {
+        body: { linkId: id }
+      });
+
+      if (error) throw error;
+
+      setLinks(links.filter(link => link.id !== id));
+      
+      toast({
+        title: "Link deletado",
+        description: "O link foi removido permanentemente.",
+      });
+    } catch (error: any) {
+      console.error('Error deleting link:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível deletar o link.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -130,11 +175,28 @@ export function CheckoutLinksList({ refresh, onRefreshComplete }: CheckoutLinksL
             {links.map((link) => (
               <div key={link.id} className="border rounded-lg p-4 space-y-3">
                 <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold text-lg">{link.title}</h3>
-                    {link.description && (
-                      <p className="text-sm text-muted-foreground">{link.description}</p>
+                  <div className="flex gap-4">
+                    {link.image_url && (
+                      <div className="flex-shrink-0">
+                        <img 
+                          src={link.image_url} 
+                          alt={link.title}
+                          className="w-16 h-16 object-cover rounded-lg border"
+                        />
+                      </div>
                     )}
+                    <div>
+                      <h3 className="font-semibold text-lg">{link.title}</h3>
+                      {link.description && (
+                        <p className="text-sm text-muted-foreground">{link.description}</p>
+                      )}
+                      {!link.image_url && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                          <Image className="h-3 w-3" />
+                          Sem imagem
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant={link.is_active ? "default" : "secondary"}>
@@ -147,6 +209,35 @@ export function CheckoutLinksList({ refresh, onRefreshComplete }: CheckoutLinksL
                     >
                       {link.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={deletingIds.has(link.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Deletar Link</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja deletar este link? Esta ação não pode ser desfeita.
+                            O link será removido do Mercado Pago e do banco de dados.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteLink(link.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            {deletingIds.has(link.id) ? 'Deletando...' : 'Deletar'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
 

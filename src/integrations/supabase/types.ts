@@ -22,6 +22,7 @@ export type Database = {
           currency: string
           description: string | null
           id: string
+          image_url: string | null
           is_active: boolean
           mercadopago_preference_id: string | null
           reference_id: string | null
@@ -35,6 +36,7 @@ export type Database = {
           currency?: string
           description?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           mercadopago_preference_id?: string | null
           reference_id?: string | null
@@ -48,6 +50,7 @@ export type Database = {
           currency?: string
           description?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           mercadopago_preference_id?: string | null
           reference_id?: string | null
@@ -197,7 +200,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_checkout_link: {
+        Args: { link_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

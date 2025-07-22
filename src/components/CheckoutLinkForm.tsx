@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Link, DollarSign, FileText } from 'lucide-react';
+import { Link, DollarSign, FileText, Upload, X } from 'lucide-react';
 
 interface CheckoutLinkFormProps {
   onLinkCreated: () => void;
@@ -16,20 +16,81 @@ export function CheckoutLinkForm({ onLinkCreated }: CheckoutLinkFormProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
+      let imageUrl = null;
+      
+      // Upload da imagem se selecionada
+      if (selectedImage) {
+        imageUrl = await uploadImage(selectedImage);
+        if (!imageUrl) {
+          toast({
+            title: "Erro",
+            description: "Não foi possível fazer upload da imagem.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('create-checkout-link', {
         body: {
           title: title.trim(),
           description: description.trim() || undefined,
           amount: parseFloat(amount),
-          currency: 'BRL'
+          currency: 'BRL',
+          image_url: imageUrl
         }
       });
 
@@ -44,6 +105,7 @@ export function CheckoutLinkForm({ onLinkCreated }: CheckoutLinkFormProps) {
       setTitle('');
       setDescription('');
       setAmount('');
+      removeImage();
       
       onLinkCreated();
     } catch (error: any) {
@@ -111,6 +173,46 @@ export function CheckoutLinkForm({ onLinkCreated }: CheckoutLinkFormProps) {
               onChange={(e) => setAmount(e.target.value)}
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              Imagem do Produto
+            </Label>
+            
+            {imagePreview ? (
+              <div className="relative">
+                <img 
+                  src={imagePreview} 
+                  alt="Preview" 
+                  className="w-full h-48 object-cover rounded-lg border"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={removeImage}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground mb-2">
+                  Clique para selecionar uma imagem
+                </p>
+                <Input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="cursor-pointer"
+                />
+              </div>
+            )}
           </div>
 
           <Button 
