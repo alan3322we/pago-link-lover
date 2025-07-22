@@ -132,6 +132,9 @@ export const TransparentCheckout = () => {
         // Aplicar cores personalizadas
         document.documentElement.style.setProperty('--primary', data.primary_color);
         document.documentElement.style.setProperty('--secondary', data.secondary_color);
+        document.documentElement.style.setProperty('--accent', data.accent_color || '#080602');
+        document.documentElement.style.setProperty('--muted-foreground', data.subtitle_color || '#1152d4');
+        document.documentElement.style.setProperty('--border', data.border_color || '#E5E7EB');
       }
     } catch (error) {
       console.error('Error loading customization:', error);

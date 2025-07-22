@@ -105,6 +105,29 @@ export function NotificationsList() {
     }
   };
 
+  const deleteAllNotifications = async () => {
+    try {
+      const { error } = await supabase.rpc('delete_all_notifications');
+
+      if (error) throw error;
+
+      setNotifications([]);
+
+      toast({
+        title: "Notificações apagadas",
+        description: "Todas as notificações foram apagadas do sistema.",
+        variant: "destructive"
+      });
+    } catch (error: any) {
+      console.error('Error deleting all notifications:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao apagar notificações.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   if (isLoading) {
@@ -133,12 +156,23 @@ export function NotificationsList() {
               Acompanhe todas as atividades em tempo real
             </CardDescription>
           </div>
-          {unreadCount > 0 && (
-            <Button size="sm" variant="outline" onClick={markAllAsRead}>
-              <Check className="h-4 w-4 mr-2" />
-              Marcar todas como lidas
+          <div className="flex gap-2">
+            {unreadCount > 0 && (
+              <Button size="sm" variant="outline" onClick={markAllAsRead}>
+                <Check className="h-4 w-4 mr-2" />
+                Marcar todas como lidas
+              </Button>
+            )}
+            <Button 
+              size="sm" 
+              variant="destructive" 
+              onClick={deleteAllNotifications}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Apagar Todas
             </Button>
-          )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>

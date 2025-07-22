@@ -16,6 +16,7 @@ export function CheckoutLinkForm({ onLinkCreated }: CheckoutLinkFormProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
+  const [deliveryLink, setDeliveryLink] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -90,7 +91,8 @@ export function CheckoutLinkForm({ onLinkCreated }: CheckoutLinkFormProps) {
           description: description.trim() || undefined,
           amount: parseFloat(amount),
           currency: 'BRL',
-          image_url: imageUrl
+          image_url: imageUrl,
+          delivery_link: deliveryLink.trim() || undefined
         }
       });
 
@@ -105,6 +107,7 @@ export function CheckoutLinkForm({ onLinkCreated }: CheckoutLinkFormProps) {
       setTitle('');
       setDescription('');
       setAmount('');
+      setDeliveryLink('');
       removeImage();
       
       onLinkCreated();
@@ -173,6 +176,23 @@ export function CheckoutLinkForm({ onLinkCreated }: CheckoutLinkFormProps) {
               onChange={(e) => setAmount(e.target.value)}
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="delivery-link" className="flex items-center gap-2">
+              <Link className="h-4 w-4" />
+              Link de Entrega
+            </Label>
+            <Input
+              id="delivery-link"
+              type="url"
+              placeholder="https://drive.google.com/... ou https://..."
+              value={deliveryLink}
+              onChange={(e) => setDeliveryLink(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Link que será liberado após o pagamento ser aprovado (opcional)
+            </p>
           </div>
 
           <div className="space-y-2">

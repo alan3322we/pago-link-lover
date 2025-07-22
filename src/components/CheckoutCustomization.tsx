@@ -695,7 +695,7 @@ export const CheckoutCustomization = () => {
         </Button>
         <Button variant="default" className="bg-blue-600 hover:bg-blue-700" onClick={() => window.open('/checkout-preview', '_blank')}>
           <Eye className="h-4 w-4 mr-2" />
-          Visualizar
+          Abrir Checkout
         </Button>
         <Button variant="destructive" onClick={handleReset} disabled={loading}>
           <Trash2 className="h-4 w-4 mr-2" />

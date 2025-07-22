@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { DollarSign, User, Calendar, CreditCard } from 'lucide-react';
+import { DollarSign, User, Calendar, CreditCard, Trash2, Download } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Payment {
   id: string;
@@ -14,14 +16,18 @@ interface Payment {
   payer_email: string | null;
   payment_method: string | null;
   created_at: string;
+  order_bump_amount?: number;
+  order_bump_selected?: boolean;
   checkout_links?: {
     title: string;
+    delivery_link?: string;
   };
 }
 
 export function PaymentsList() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   const fetchPayments = async () => {
     try {
@@ -30,7 +36,8 @@ export function PaymentsList() {
         .select(`
           *,
           checkout_links (
-            title
+            title,
+            delivery_link
           )
         `)
         .order('created_at', { ascending: false });
@@ -77,6 +84,68 @@ export function PaymentsList() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
+  const deleteAllPayments = async () => {
+    try {
+      const { error } = await supabase.rpc('delete_all_payments');
+      
+      if (error) throw error;
+      
+      setPayments([]);
+      
+      toast({
+        title: "Pagamentos apagados",
+        description: "Todos os pagamentos foram apagados do sistema.",
+        variant: "destructive"
+      });
+    } catch (error: any) {
+      console.error('Error deleting all payments:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao apagar pagamentos.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const downloadPaymentsData = () => {
+    const approvedPayments = payments.filter(p => p.status === 'approved');
+    
+    const csvData = [
+      ['ID', 'MercadoPago ID', 'Status', 'Valor', 'Moeda', 'Nome', 'Email', 'Método', 'Data', 'Produto'],
+      ...approvedPayments.map(payment => [
+        payment.id,
+        payment.mercadopago_payment_id,
+        payment.status,
+        payment.amount,
+        payment.currency,
+        payment.payer_name || '',
+        payment.payer_email || '',
+        payment.payment_method || '',
+        new Date(payment.created_at).toLocaleDateString('pt-BR'),
+        payment.checkout_links?.title || ''
+      ])
+    ];
+
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `pagamentos_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    toast({
+      title: "Download iniciado",
+      description: "O arquivo com os dados dos pagamentos está sendo baixado.",
+    });
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -90,13 +159,37 @@ export function PaymentsList() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <DollarSign className="h-5 w-5 text-primary" />
-          Pagamentos Recebidos
-        </CardTitle>
-        <CardDescription>
-          Acompanhe todos os pagamentos em tempo real
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-primary" />
+              Pagamentos Recebidos
+            </CardTitle>
+            <CardDescription>
+              Acompanhe todos os pagamentos em tempo real
+            </CardDescription>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={downloadPaymentsData}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download
+            </Button>
+            <Button 
+              size="sm" 
+              variant="destructive" 
+              onClick={deleteAllPayments}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Apagar Todos
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         {payments.length === 0 ? (
@@ -141,8 +234,20 @@ export function PaymentsList() {
                   </div>
                 )}
 
-                <div className="text-xs text-muted-foreground font-mono">
-                  ID: {payment.mercadopago_payment_id}
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-muted-foreground font-mono">
+                    ID: {payment.mercadopago_payment_id}
+                  </div>
+                  {payment.status === 'approved' && payment.checkout_links?.delivery_link && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => window.open(payment.checkout_links?.delivery_link, '_blank')}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Ver Entrega
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

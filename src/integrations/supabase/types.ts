@@ -158,6 +158,7 @@ export type Database = {
           checkout_url: string | null
           created_at: string
           currency: string
+          delivery_link: string | null
           description: string | null
           id: string
           image_url: string | null
@@ -172,6 +173,7 @@ export type Database = {
           checkout_url?: string | null
           created_at?: string
           currency?: string
+          delivery_link?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
@@ -186,6 +188,7 @@ export type Database = {
           checkout_url?: string | null
           created_at?: string
           currency?: string
+          delivery_link?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
@@ -391,8 +394,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_all_notifications: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      delete_all_payments: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       delete_checkout_link: {
         Args: { link_id: string }
+        Returns: Json
+      }
+      delete_notification: {
+        Args: { notification_id: string }
+        Returns: Json
+      }
+      delete_payment: {
+        Args: { payment_id: string }
         Returns: Json
       }
     }
